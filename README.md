@@ -1,16 +1,16 @@
 # statamic-cap
 
-Addon Statamic pour intégrer [Cap](https://github.com/tiagozip/cap) — un CAPTCHA proof-of-work auto-hébergé — dans les formulaires Statamic.
+Statamic addon to integrate [Cap](https://github.com/tiagozip/cap) — a self-hosted proof-of-work CAPTCHA — into Statamic forms.
 
-Basé sur [oliweb/laravel-cap](https://github.com/oli217/laravel-cap).
+Built on top of [oliweb/laravel-cap](https://github.com/oliweb-ch/laravel-cap).
 
 ---
 
-## Prérequis
+## Requirements
 
 - PHP 8.2+
-- Statamic 5.x ou 6.x
-- Une instance Cap auto-hébergée
+- Statamic 5.x or 6.x
+- A self-hosted Cap instance
 
 ---
 
@@ -20,34 +20,34 @@ Basé sur [oliweb/laravel-cap](https://github.com/oli217/laravel-cap).
 composer require oliweb/statamic-cap
 ```
 
-Les assets (JS + CSS) sont servis automatiquement par l'addon via des routes dédiées. Aucun `vendor:publish` n'est nécessaire.
+Assets (JS + CSS) are served automatically by the addon via dedicated routes. No `vendor:publish` required.
 
 ---
 
 ## Configuration
 
-### Via le panneau Statamic CP
+### Via the Statamic CP
 
-Accéder à **Tools > Cap CAPTCHA** dans le panneau d'administration Statamic.
+Go to **Tools > Cap CAPTCHA** in the Statamic control panel.
 
-| Champ | Description |
+| Field | Description |
 |-------|-------------|
-| Cap Endpoint URL | URL complète de votre instance Cap, incluant le site-key (ex : `https://cap.example.com/votre-site-key/`) |
-| Secret Key | Clé secrète générée dans le tableau de bord Cap |
-| Token Field Name | Nom du champ hidden injecté par le widget (défaut : `cap-token`) |
-| Timeout (seconds) | Délai avant abandon de la requête vers `/siteverify` (défaut : `5`) |
-| Fail Open | Si activé, laisse passer la requête en cas d'erreur de communication avec Cap |
-| Hide Attribution Link | Si activé, masque le lien « Cap » en bas à droite du widget |
+| Cap Endpoint URL | Full URL of your Cap instance, including the site key (e.g. `https://cap.example.com/your-site-key/`) |
+| Secret Key | Secret key generated in the Cap dashboard |
+| Token Field Name | Name of the hidden field injected by the widget (default: `cap-token`) |
+| Timeout (seconds) | Request timeout for `/siteverify` calls (default: `5`) |
+| Fail Open | If enabled, allows requests through on Cap communication errors |
+| Hide Attribution Link | If enabled, hides the "Cap" attribution link at the bottom right of the widget |
 
-Les réglages sont sauvegardés dans `storage/statamic/addons/statamic-cap.yaml`.
+Settings are saved to `storage/statamic/addons/statamic-cap.yaml`.
 
-### Via variables d'environnement
+### Via environment variables
 
-Les variables d'environnement servent de valeurs par défaut et sont surchargées par les réglages CP.
+Environment variables serve as default values and are overridden by CP settings.
 
 ```env
-CAP_ENDPOINT=https://cap.example.com/votre-site-key/
-CAP_SECRET=votre-cle-secrete
+CAP_ENDPOINT=https://cap.example.com/your-site-key/
+CAP_SECRET=your-secret-key
 CAP_TOKEN_FIELD=cap-token
 CAP_TIMEOUT=5
 CAP_FAIL_OPEN=false
@@ -56,20 +56,20 @@ CAP_HIDE_ATTRIBUTION=false
 
 ---
 
-## Utilisation
+## Usage
 
-### Tags Antlers
+### Antlers tags
 
 | Tag | Description |
 |-----|-------------|
-| `{{ cap }}` | Rendu du `<cap-widget>` avec l'endpoint configuré |
-| `{{ cap:scripts }}` | Injecte `window.CAP_CUSTOM_WASM_URL` + `<script type="module">` pour le widget |
-| `{{ cap:styles }}` | Balise `<link>` CSS du widget |
-| `{{ cap:config }}` | `<script>` exposant `window.CAP_API_ENDPOINT` et `window.CAP_TOKEN_FIELD` |
+| `{{ cap }}` | Renders the `<cap-widget>` with the configured endpoint |
+| `{{ cap:scripts }}` | Injects `window.CAP_CUSTOM_WASM_URL` + `<script type="module">` for the widget |
+| `{{ cap:styles }}` | Widget CSS `<link>` tag |
+| `{{ cap:config }}` | `<script>` exposing `window.CAP_API_ENDPOINT` and `window.CAP_TOKEN_FIELD` |
 
-#### Mode widget standard
+#### Standard widget mode
 
-Charger les assets dans le layout et ajouter le widget dans un formulaire Statamic :
+Load assets in the layout and add the widget to a Statamic form:
 
 ```antlers
 <head>
@@ -79,20 +79,20 @@ Charger les assets dans le layout et ajouter le widget dans un formulaire Statam
 
     {{ form:create handle="contact" }}
         {{ cap }}
-        <button type="submit">Envoyer</button>
+        <button type="submit">Send</button>
     {{ /form:create }}
 
     {{ cap:scripts }}
 </body>
 ```
 
-Le widget injecte automatiquement un champ hidden `cap-token` dans le formulaire parent lors de la vérification.
+The widget automatically injects a hidden `cap-token` field into the parent form upon verification.
 
-`{{ cap:scripts }}` injecte toujours `window.CAP_CUSTOM_WASM_URL` pointant vers la route locale du WASM, sans requête externe au runtime.
+`{{ cap:scripts }}` always injects `window.CAP_CUSTOM_WASM_URL` pointing to the local WASM route — no external request at runtime.
 
-#### Mode programmatic
+#### Programmatic mode
 
-Utilisez `{{ cap:config }}` pour exposer l'endpoint en JavaScript, puis instanciez `Cap` directement sans afficher de widget visible :
+Use `{{ cap:config }}` to expose the endpoint in JavaScript, then instantiate `Cap` directly without rendering a visible widget:
 
 ```antlers
 <head>
@@ -105,7 +105,7 @@ Utilisez `{{ cap:config }}` pour exposer l'endpoint en JavaScript, puis instanci
 
     <form method="POST" action="/contact">
         <input type="hidden" name="cap-token" id="cap-token">
-        <button type="submit" id="submit-btn">Envoyer</button>
+        <button type="submit" id="submit-btn">Send</button>
     </form>
 
     <script type="module">
@@ -123,11 +123,11 @@ Utilisez `{{ cap:config }}` pour exposer l'endpoint en JavaScript, puis instanci
 </body>
 ```
 
-`Cap` crée automatiquement un élément `cap-widget` masqué en arrière-plan. Aucun widget visuel n'est rendu.
+`Cap` automatically creates a hidden `cap-widget` element in the background. No visible widget is rendered.
 
-`window.CAP_API_ENDPOINT` et `window.CAP_TOKEN_FIELD` sont définis par `{{ cap:config }}` depuis la configuration PHP, sans hard-coding côté JavaScript.
+`window.CAP_API_ENDPOINT` and `window.CAP_TOKEN_FIELD` are set by `{{ cap:config }}` from the PHP configuration — no JavaScript hard-coding required.
 
-#### Avec nonce CSP
+#### With CSP nonce
 
 ```antlers
 {{ cap:config nonce="{ $cspNonce }" }}
@@ -135,9 +135,9 @@ Utilisez `{{ cap:config }}` pour exposer l'endpoint en JavaScript, puis instanci
 {{ cap nonce="{ $cspNonce }" }}
 ```
 
-#### Headers CSP
+#### CSP headers
 
-Le widget utilise des Web Workers et WebAssembly. Une CSP stricte doit inclure :
+The widget relies on Web Workers and WebAssembly. A strict CSP must include:
 
 ```
 Content-Security-Policy:
@@ -147,37 +147,37 @@ Content-Security-Policy:
   connect-src 'self';
 ```
 
-`worker-src blob:` — requis car le widget crée des workers via des URLs `Blob`.
-`wasm-unsafe-eval` — requis pour le calcul WebAssembly.
-`connect-src 'self'` — suffisant si le WASM est hébergé localement (voir ci-dessous).
+`worker-src blob:` — required because the widget spawns workers via Blob URLs.  
+`wasm-unsafe-eval` — required for WebAssembly hash computation.  
+`connect-src 'self'` — sufficient when WASM is served locally (see below).
 
-### Validation automatique
+### Automatic validation
 
-La vérification du token est automatique : l'addon écoute l'événement `FormSubmitted` de Statamic et rejette la soumission si le token est invalide ou absent. Aucune configuration supplémentaire n'est nécessaire.
+Token verification is automatic: the addon listens to Statamic's `FormSubmitted` event and rejects the submission if the token is invalid or missing. No additional configuration required.
 
-En cas d'échec, une erreur de validation est retournée avec le message `statamic-cap::messages.validation_failed`.
+On failure, a validation error is returned with the message `statamic-cap::messages.validation_failed`.
 
 ---
 
-## WASM local (CSP stricte)
+## Local WASM (strict CSP)
 
-Par défaut, `{{ cap:scripts }}` injecte `window.CAP_CUSTOM_WASM_URL` pointant vers la route `/vendor/statamic-cap/cap_wasm_bg.wasm`. Cette route sert le fichier local s'il est présent, sinon redirige automatiquement vers le CDN jsDelivr.
+By default, `{{ cap:scripts }}` injects `window.CAP_CUSTOM_WASM_URL` pointing to the `/vendor/statamic-cap/cap_wasm_bg.wasm` route. This route serves the local file if present, otherwise falls back to the jsDelivr CDN.
 
-Pour une auto-hébergement complet sans aucune requête externe, téléchargez le WASM localement :
+For fully self-hosted operation with no external requests, download the WASM file locally:
 
 ```bash
 php artisan cap:publish-wasm
 ```
 
-Le fichier est sauvegardé dans `storage/app/statamic-cap/cap_wasm_bg.wasm` et servi automatiquement. La CSP peut alors se limiter à `connect-src 'self'` sans whitelister jsDelivr.
+The file is saved to `storage/app/statamic-cap/cap_wasm_bg.wasm` and served automatically. The CSP can then be limited to `connect-src 'self'` without whitelisting jsDelivr.
 
 ---
 
-## Traductions
+## Translations
 
-Les traductions sont disponibles en anglais et en français. Les chaînes couvrent la validation, les messages d'erreur, les libellés du widget et la page de réglages CP.
+Translations are available in English and French. Strings cover validation, error messages, widget labels, and the CP settings page.
 
-Pour les personnaliser, copier et modifier le fichier dans votre projet :
+To customise them, copy and edit the file in your project:
 
 ```
 lang/vendor/statamic-cap/{locale}/messages.php
@@ -185,6 +185,6 @@ lang/vendor/statamic-cap/{locale}/messages.php
 
 ---
 
-## Licence
+## License
 
-MIT
+MIT — see [LICENSE](LICENSE)
