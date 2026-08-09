@@ -9,6 +9,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- **Asset URLs now include a cache-busting `v` parameter.** `{{ cap:scripts }}` and `{{ cap:styles }}` append `?v=<version>` derived from the installed version of `oliweb/laravel-cap` (via `Composer\InstalledVersions`). The WASM URL additionally carries `?v=<filemtime>` when the local file has been published, or no parameter when it is absent. ETag values for JS and CSS responses are now the package version string instead of a per-request `md5()` of the full file content, eliminating a redundant hash computation on every uncached request. The WASM ETag is now the file's `filemtime`. Together these changes ensure that a `composer update oliweb/laravel-cap` automatically invalidates browser caches without any action required from the user. **No breaking change** — existing installations that have not published the WASM locally are unaffected; those that have will benefit from correct mtime-based cache invalidation.
+
+
+
 - **WASM CDN fallback is now opt-in (potentially breaking).** Previously, if the local WASM file had not been published via `php artisan cap:publish-wasm`, the addon silently redirected to `cdn.jsdelivr.net`. This behaviour has changed: the default is now a **503 response** with an explicit log warning, rather than an invisible dependency on an external CDN. Existing installations that relied on the silent CDN fallback without having published the WASM locally will receive 503 errors on the WASM route until they either run `php artisan cap:publish-wasm` or explicitly enable `wasm_cdn_fallback` (via `CAP_WASM_CDN_FALLBACK=true` or the CP settings panel).
 
 ### Added

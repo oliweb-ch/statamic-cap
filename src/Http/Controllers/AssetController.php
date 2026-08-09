@@ -6,6 +6,7 @@ use Illuminate\Http\Response;
 use Illuminate\Routing\Controller;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Log;
+use StatamicCap\Support\AssetVersion;
 use Symfony\Component\HttpFoundation\Response as BaseResponse;
 
 class AssetController extends Controller
@@ -17,7 +18,7 @@ class AssetController extends Controller
         $path = base_path('vendor/oliweb/laravel-cap/resources/js/cap-widget.js');
 
         $content = File::get($path);
-        $etag    = md5($content);
+        $etag    = AssetVersion::packageVersion();
 
         if (request()->header('If-None-Match') === $etag) {
             return response('', 304);
@@ -35,7 +36,7 @@ class AssetController extends Controller
         $path = base_path('vendor/oliweb/laravel-cap/resources/css/cap-widget.css');
 
         $content = File::get($path);
-        $etag    = md5($content);
+        $etag    = AssetVersion::packageVersion();
 
         if (request()->header('If-None-Match') === $etag) {
             return response('', 304);
@@ -54,7 +55,10 @@ class AssetController extends Controller
 
         if (File::exists($local)) {
             $content = File::get($local);
-            $etag    = md5($content);
+            // AssetVersion::wasm() is non-null here since File::exists() just passed.
+            // The ?? 'local' fallback covers the near-impossible race where the file
+            // disappears between the two calls; it degrades gracefully (no 304, no ETag).
+            $etag    = AssetVersion::wasm() ?? 'local';
 
             if (request()->header('If-None-Match') === $etag) {
                 return response('', 304);

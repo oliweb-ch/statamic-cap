@@ -3,6 +3,7 @@
 namespace StatamicCap\Tags;
 
 use Statamic\Tags\Tags;
+use StatamicCap\Support\AssetVersion;
 
 class Cap extends Tags
 {
@@ -54,7 +55,7 @@ class Cap extends Tags
     public function scripts(): string
     {
         $nonce     = $this->params->get('nonce');
-        $src       = e(route('statamic-cap.assets.js'));
+        $src       = e(route('statamic-cap.assets.js', ['v' => AssetVersion::packageVersion()]));
         $nonceAttr = $nonce ? ' nonce="' . e($nonce) . '"' : '';
 
         $globals = $this->buildGlobals($nonce);
@@ -71,7 +72,7 @@ class Cap extends Tags
      */
     public function styles(): string
     {
-        $css = '<link rel="stylesheet" href="' . e(route('statamic-cap.assets.css')) . '">';
+        $css = '<link rel="stylesheet" href="' . e(route('statamic-cap.assets.css', ['v' => AssetVersion::packageVersion()])) . '">';
 
         if (config('statamic-cap.hide_attribution', false)) {
             $css .= "\n" . '<style>cap-widget::part(attribution){display:none}</style>';
@@ -117,7 +118,12 @@ class Cap extends Tags
         // Le widget lit nativement window.CAP_CUSTOM_WASM_URL.
         // On pointe toujours vers notre route — elle sert le WASM local si présent,
         // sinon redirige vers le CDN jsdelivr.
-        $assignments[] = 'window.CAP_CUSTOM_WASM_URL=' . json_encode(route('statamic-cap.assets.wasm'), JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT);
+        $wasmVersion = AssetVersion::wasm();
+        $wasmUrl     = $wasmVersion
+            ? route('statamic-cap.assets.wasm', ['v' => $wasmVersion])
+            : route('statamic-cap.assets.wasm');
+
+        $assignments[] = 'window.CAP_CUSTOM_WASM_URL=' . json_encode($wasmUrl, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT);
 
         return implode(';', $assignments);
     }
