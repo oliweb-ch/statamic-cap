@@ -99,8 +99,8 @@ class Cap extends Tags
         $nonceAttr  = $nonce ? ' nonce="' . e($nonce) . '"' : '';
 
         return '<script' . $nonceAttr . '>'
-            . 'window.CAP_API_ENDPOINT=' . json_encode($endpoint) . ';'
-            . 'window.CAP_TOKEN_FIELD=' . json_encode($tokenField) . ';'
+            . 'window.CAP_API_ENDPOINT=' . json_encode($endpoint, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) . ';'
+            . 'window.CAP_TOKEN_FIELD=' . json_encode($tokenField, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) . ';'
             . '</script>';
     }
 
@@ -109,7 +109,7 @@ class Cap extends Tags
         $assignments = [];
 
         if ($nonce) {
-            $encoded = json_encode($nonce);
+            $encoded = json_encode($nonce, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT);
             $assignments[] = 'window.CAP_CSP_NONCE=' . $encoded;
             $assignments[] = 'window.CAP_CSS_NONCE=' . $encoded;
         }
@@ -117,7 +117,7 @@ class Cap extends Tags
         // Le widget lit nativement window.CAP_CUSTOM_WASM_URL.
         // On pointe toujours vers notre route — elle sert le WASM local si présent,
         // sinon redirige vers le CDN jsdelivr.
-        $assignments[] = 'window.CAP_CUSTOM_WASM_URL=' . json_encode(route('statamic-cap.assets.wasm'));
+        $assignments[] = 'window.CAP_CUSTOM_WASM_URL=' . json_encode(route('statamic-cap.assets.wasm'), JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT);
 
         return implode(';', $assignments);
     }

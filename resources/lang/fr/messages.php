@@ -1,7 +1,8 @@
 <?php
 
 return [
-    'validation_failed'    => 'La vérification Cap a échoué. Veuillez compléter le défi et réessayer.',
+    'validation_failed'         => 'La vérification Cap a échoué. Veuillez compléter le défi et réessayer.',
+    'validation_endpoint_https' => "L'URL de l'instance Cap doit utiliser HTTPS.",
     'form_failed'          => 'La vérification Cap a échoué. Veuillez réessayer.',
     'settings_saved'       => 'Réglages Cap enregistrés.',
 

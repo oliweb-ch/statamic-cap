@@ -19,12 +19,14 @@ class SettingsController
     public function update(Request $request): RedirectResponse
     {
         $data = $request->validate([
-            'endpoint'         => ['required', 'url'],
-            'token_field'      => ['required', 'string', 'alpha_dash'],
-            'timeout'          => ['required', 'integer', 'min:1', 'max:60'],
-            'fail_open'          => ['nullable', 'boolean'],
-            'hide_attribution'   => ['nullable', 'boolean'],
-            'wasm_cdn_fallback'  => ['nullable', 'boolean'],
+            'endpoint'          => ['required', 'url:https'],
+            'token_field'       => ['required', 'string', 'alpha_dash'],
+            'timeout'           => ['required', 'integer', 'min:1', 'max:60'],
+            'fail_open'         => ['nullable', 'boolean'],
+            'hide_attribution'  => ['nullable', 'boolean'],
+            'wasm_cdn_fallback' => ['nullable', 'boolean'],
+        ], [
+            'endpoint.url' => __('statamic-cap::messages.validation_endpoint_https'),
         ]);
 
         unset($data['secret']);

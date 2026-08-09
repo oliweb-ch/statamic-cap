@@ -18,6 +18,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Security
 
+- **`JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT` applied to all `json_encode()` calls in `Cap.php`.** Values interpolated into inline `<script>` blocks (endpoint, token field name, nonce, WASM URL) are now unicode-escaped, preventing XSS injection if any of those values were to contain a raw `<` or `&` sequence.
+- **Cap endpoint restricted to HTTPS in `SettingsController`.** The `endpoint` validation rule is now `url:https` (native Laravel 13 parameter syntax) instead of the permissive `url`. **Potentially breaking:** installations currently configured with an HTTP endpoint — including local development environments — will receive a validation error when saving settings until the endpoint is updated to HTTPS. This restriction is intentional: the CP settings panel is a production surface and, unlike `laravel-cap` which tolerates HTTP for development, `statamic-cap` enforces HTTPS unconditionally.
 - **Removed Cap secret from the CP settings panel.** The secret field (`<input type="password">`) has been removed from the settings view. The secret must now be configured exclusively via `CAP_SECRET` in `.env` or through the published `oliweb/laravel-cap` configuration — never from the Statamic control panel.
 - **`ValidateCapToken` now builds its own `Cap` instance** with an explicit config instead of relying on the `LaravelCap\Facades\Cap` singleton. The `secret` key is sourced exclusively from `config('cap.secret')` (the `laravel-cap` namespace), ensuring `statamic-cap` never stores or reads the secret.
 

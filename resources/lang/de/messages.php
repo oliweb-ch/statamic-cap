@@ -1,7 +1,8 @@
 <?php
 
 return [
-    'validation_failed'      => 'Die Cap-Verifizierung ist fehlgeschlagen. Bitte lösen Sie die Aufgabe und versuchen Sie es erneut.',
+    'validation_failed'         => 'Die Cap-Verifizierung ist fehlgeschlagen. Bitte lösen Sie die Aufgabe und versuchen Sie es erneut.',
+    'validation_endpoint_https' => 'Die Cap-Endpunkt-URL muss HTTPS verwenden.',
     'form_failed'            => 'Die Cap-Verifizierung ist fehlgeschlagen. Bitte versuchen Sie es erneut.',
     'settings_saved'         => 'Cap-Einstellungen gespeichert.',
 

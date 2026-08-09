@@ -1,7 +1,8 @@
 <?php
 
 return [
-    'validation_failed'    => 'The Cap verification failed. Please complete the challenge and try again.',
+    'validation_failed'          => 'The Cap verification failed. Please complete the challenge and try again.',
+    'validation_endpoint_https'  => 'The Cap endpoint URL must use HTTPS.',
     'form_failed'          => 'Cap verification failed. Please try again.',
     'settings_saved'       => 'Cap settings saved.',
 
