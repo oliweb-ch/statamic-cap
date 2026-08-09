@@ -2,6 +2,8 @@
 
 namespace StatamicCap;
 
+use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Route;
 use Statamic\Facades\CP\Nav;
 use Statamic\Facades\YAML;
@@ -59,6 +61,19 @@ class ServiceProvider extends AddonServiceProvider
         }
 
         $settings = YAML::file($path)->parse();
+
+        if (isset($settings['secret'])) {
+            unset($settings['secret']);
+            try {
+                File::put($path, YAML::dump($settings));
+            } catch (\Throwable $e) {
+                Log::warning(
+                    'statamic-cap: impossible de purger le secret résiduel du fichier YAML. ' .
+                    'Supprimez manuellement la clé "secret" dans : ' . $path,
+                    ['exception' => $e->getMessage()]
+                );
+            }
+        }
 
         config(['statamic-cap' => array_merge(config('statamic-cap', []), $settings)]);
     }

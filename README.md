@@ -33,25 +33,29 @@ Go to **Tools > Cap CAPTCHA** in the Statamic control panel.
 | Field | Description |
 |-------|-------------|
 | Cap Endpoint URL | Full URL of your Cap instance, including the site key (e.g. `https://cap.example.com/your-site-key/`) |
-| Secret Key | Secret key generated in the Cap dashboard |
 | Token Field Name | Name of the hidden field injected by the widget (default: `cap-token`) |
 | Timeout (seconds) | Request timeout for `/siteverify` calls (default: `5`) |
 | Fail Open | If enabled, allows requests through on Cap communication errors |
 | Hide Attribution Link | If enabled, hides the "Cap" attribution link at the bottom right of the widget |
 
+> **Important — Cap secret:** the secret is **not** configurable from this panel. It must be set exclusively via the `CAP_SECRET` environment variable in `.env` (or via the published `oliweb/laravel-cap` configuration). Exposing the secret in the CP panel is a security risk; it is read directly from `config('cap.secret')` at verification time.
+
 Settings are saved to `storage/statamic/addons/statamic-cap.yaml`.
 
 ### Via environment variables
 
-Environment variables serve as default values and are overridden by CP settings.
+Environment variables serve as default values and are overridden by CP settings for editable fields.
 
 ```env
+# Configurable from the CP panel as well
 CAP_ENDPOINT=https://cap.example.com/your-site-key/
-CAP_SECRET=your-secret-key
 CAP_TOKEN_FIELD=cap-token
 CAP_TIMEOUT=5
 CAP_FAIL_OPEN=false
 CAP_HIDE_ATTRIBUTION=false
+
+# Secret — via .env or config/cap.php only (never from the CP panel)
+CAP_SECRET=your-secret-key
 ```
 
 ---

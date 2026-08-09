@@ -20,12 +20,13 @@ class SettingsController
     {
         $data = $request->validate([
             'endpoint'         => ['required', 'url'],
-            'secret'           => ['required', 'string'],
             'token_field'      => ['required', 'string', 'alpha_dash'],
             'timeout'          => ['required', 'integer', 'min:1', 'max:60'],
             'fail_open'        => ['nullable', 'boolean'],
             'hide_attribution' => ['nullable', 'boolean'],
         ]);
+
+        unset($data['secret']);
 
         $data['fail_open']        = $request->boolean('fail_open');
         $data['hide_attribution'] = $request->boolean('hide_attribution');

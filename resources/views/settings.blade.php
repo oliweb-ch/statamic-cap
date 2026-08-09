@@ -44,19 +44,6 @@
 
                 <div class="form-group mb-4">
                     <label class="block font-bold text-sm mb-1">
-                        {{ __('statamic-cap::messages.field_secret') }}
-                        <span class="text-red-500">*</span>
-                    </label>
-                    <input type="password"
-                           name="secret"
-                           value="{{ old('secret', $settings['secret'] ?? '') }}"
-                           class="input-text w-full"
-                           required>
-                    <p class="text-sm text-grey mt-1">{{ __('statamic-cap::messages.field_secret_hint') }}</p>
-                </div>
-
-                <div class="form-group mb-4">
-                    <label class="block font-bold text-sm mb-1">
                         {{ __('statamic-cap::messages.field_token_field') }}
                     </label>
                     <input type="text"
