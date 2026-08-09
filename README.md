@@ -167,7 +167,9 @@ On failure, a validation error is returned with the message `statamic-cap::messa
 
 ### Disabling Cap on a specific form
 
-By default, every form submission is verified. To exclude a specific form (e.g. an internal admin form that never renders the Cap widget), add `cap_disabled: true` as a top-level key in the form's YAML file:
+By default, every form submission is verified. To exclude a specific form (e.g. an internal admin form that never renders the Cap widget), use the **Cap** tab in Statamic's form editor in the control panel and toggle **Disable Cap** on.
+
+Alternatively, add `cap_disabled: true` directly as a top-level key in the form's YAML file (useful for Git-managed form configurations):
 
 ```yaml
 # resources/forms/my_internal_form.yaml
@@ -181,8 +183,6 @@ fields:
 ```
 
 When `cap_disabled: true` is present, the listener exits immediately without making any network request to Cap's `/siteverify` endpoint.
-
-> **Note:** there is currently no checkbox for this setting in Statamic's form editor in the control panel — it must be set manually in the YAML file.
 
 > **Non-breaking:** forms that do not have `cap_disabled` in their YAML are protected exactly as before. The absence of the key is treated as `cap_disabled: false`.
 

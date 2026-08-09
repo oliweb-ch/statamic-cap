@@ -21,6 +21,9 @@ return [
     'field_hide_attribution'      => 'Attributionslink ausblenden',
     'field_hide_attribution_hint' => 'Blendet den "Cap"-Link unten rechts im Widget aus.',
 
+    'field_cap_disabled'           => 'Cap deaktivieren',
+    'field_cap_disabled_hint'      => 'Wenn aktiviert, wird dieses Formular von der Cap-Verifizierung ausgenommen — es wird keine Netzwerkanfrage an /siteverify gestellt. Gedacht für interne Formulare oder Admin-Formulare, die das Cap-Widget nie anzeigen.',
+
     'field_wasm_cdn_fallback'      => 'CDN-Fallback für WASM erlauben',
     'field_wasm_cdn_fallback_hint' => 'Wenn aktiviert, fällt das Addon auf cdn.jsdelivr.net zurück, falls die lokale WASM-Datei nicht über `php artisan cap:publish-wasm` veröffentlicht wurde. Standardmäßig deaktiviert: Eine fehlende lokale WASM-Datei gibt einen 503 zurück, anstatt stillschweigend von einem externen CDN abhängig zu sein.',
 

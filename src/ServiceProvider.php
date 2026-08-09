@@ -6,6 +6,7 @@ use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Route;
 use Statamic\Facades\CP\Nav;
+use Statamic\Facades\Form;
 use Statamic\Facades\YAML;
 use Statamic\Providers\AddonServiceProvider;
 use StatamicCap\Console\Commands\PublishWasm;
@@ -40,6 +41,14 @@ class ServiceProvider extends AddonServiceProvider
         $this->bootWebRoutes();
         $this->bootCpRoutes();
         $this->bootCpNav();
+
+        Form::appendConfigFields('*', 'Cap', [
+            'cap_disabled' => [
+                'type'         => 'toggle',
+                'display'      => __('statamic-cap::messages.field_cap_disabled'),
+                'instructions' => __('statamic-cap::messages.field_cap_disabled_hint'),
+            ],
+        ]);
 
         if ($this->app->runningInConsole()) {
             $this->publishes([
