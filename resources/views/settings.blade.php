@@ -90,6 +90,18 @@
                     <p class="text-sm text-grey mt-1 ml-6">{{ __('statamic-cap::messages.field_hide_attribution_hint') }}</p>
                 </div>
 
+                <div class="form-group mb-4">
+                    <label class="flex items-center gap-2 cursor-pointer">
+                        <input type="hidden" name="wasm_cdn_fallback" value="0">
+                        <input type="checkbox"
+                               name="wasm_cdn_fallback"
+                               value="1"
+                               @checked(old('wasm_cdn_fallback', $settings['wasm_cdn_fallback'] ?? false))>
+                        <span class="font-bold text-sm">{{ __('statamic-cap::messages.field_wasm_cdn_fallback') }}</span>
+                    </label>
+                    <p class="text-sm text-grey mt-1 ml-6">{{ __('statamic-cap::messages.field_wasm_cdn_fallback_hint') }}</p>
+                </div>
+
             </div>
 
             <div class="mt-6">

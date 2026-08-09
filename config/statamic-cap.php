@@ -57,4 +57,19 @@ return [
     |
     */
     'hide_attribution' => (bool) env('CAP_HIDE_ATTRIBUTION', false),
+
+    /*
+    |--------------------------------------------------------------------------
+    | Fallback CDN WASM
+    |--------------------------------------------------------------------------
+    |
+    | Quand true, si le WASM local n'a pas été publié via
+    | `php artisan cap:publish-wasm`, l'addon se rabat sur
+    | cdn.jsdelivr.net pour servir le fichier WASM.
+    |
+    | Par défaut false : l'absence de WASM local produit un 503 explicite
+    | plutôt qu'une dépendance silencieuse à un CDN externe.
+    |
+    */
+    'wasm_cdn_fallback' => (bool) env('CAP_WASM_CDN_FALLBACK', false),
 ];

@@ -37,6 +37,9 @@ Go to **Tools > Cap CAPTCHA** in the Statamic control panel.
 | Timeout (seconds) | Request timeout for `/siteverify` calls (default: `5`) |
 | Fail Open | If enabled, allows requests through on Cap communication errors |
 | Hide Attribution Link | If enabled, hides the "Cap" attribution link at the bottom right of the widget |
+| Allow CDN fallback for WASM | If enabled, falls back to `cdn.jsdelivr.net` when the local WASM has not been published. **Disabled by default** — see note below. |
+
+> **Breaking change (v1.8+) — WASM CDN fallback:** prior to this version, a missing local WASM file silently redirected to `cdn.jsdelivr.net`. This fallback is now **opt-in**: with `Allow CDN fallback for WASM` disabled (the new default), a missing local WASM returns a **503** instead. The recommended solution is to publish the WASM locally once via `php artisan cap:publish-wasm`. Enable the CDN fallback only if you explicitly accept the external dependency.
 
 > **Important — Cap secret:** the secret is **not** configurable from this panel. It must be set exclusively via the `CAP_SECRET` environment variable in `.env` (or via the published `oliweb/laravel-cap` configuration). Exposing the secret in the CP panel is a security risk; it is read directly from `config('cap.secret')` at verification time.
 
@@ -53,6 +56,7 @@ CAP_TOKEN_FIELD=cap-token
 CAP_TIMEOUT=5
 CAP_FAIL_OPEN=false
 CAP_HIDE_ATTRIBUTION=false
+CAP_WASM_CDN_FALLBACK=false
 
 # Secret — via .env or config/cap.php only (never from the CP panel)
 CAP_SECRET=your-secret-key

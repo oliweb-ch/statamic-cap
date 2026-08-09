@@ -20,6 +20,9 @@ return [
     'field_hide_attribution'      => 'Hide attribution link',
     'field_hide_attribution_hint' => 'Hide the "Cap" link displayed in the bottom-right corner of the widget.',
 
+    'field_wasm_cdn_fallback'      => 'Allow CDN fallback for WASM',
+    'field_wasm_cdn_fallback_hint' => 'When enabled, the addon falls back to cdn.jsdelivr.net if the local WASM file has not been published via `php artisan cap:publish-wasm`. Disabled by default: a missing local WASM returns a 503 rather than silently depending on an external CDN.',
+
     'widget_initial_state'        => "Verify you're human",
     'widget_required_label'       => "Please verify you're human",
     'widget_verifying_label'      => 'Verifying...',

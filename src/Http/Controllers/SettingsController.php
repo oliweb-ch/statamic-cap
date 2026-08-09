@@ -22,14 +22,16 @@ class SettingsController
             'endpoint'         => ['required', 'url'],
             'token_field'      => ['required', 'string', 'alpha_dash'],
             'timeout'          => ['required', 'integer', 'min:1', 'max:60'],
-            'fail_open'        => ['nullable', 'boolean'],
-            'hide_attribution' => ['nullable', 'boolean'],
+            'fail_open'          => ['nullable', 'boolean'],
+            'hide_attribution'   => ['nullable', 'boolean'],
+            'wasm_cdn_fallback'  => ['nullable', 'boolean'],
         ]);
 
         unset($data['secret']);
 
-        $data['fail_open']        = $request->boolean('fail_open');
-        $data['hide_attribution'] = $request->boolean('hide_attribution');
+        $data['fail_open']         = $request->boolean('fail_open');
+        $data['hide_attribution']  = $request->boolean('hide_attribution');
+        $data['wasm_cdn_fallback'] = $request->boolean('wasm_cdn_fallback');
 
         $path = storage_path('statamic/addons/statamic-cap.yaml');
         File::ensureDirectoryExists(dirname($path));

@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- **WASM CDN fallback is now opt-in (potentially breaking).** Previously, if the local WASM file had not been published via `php artisan cap:publish-wasm`, the addon silently redirected to `cdn.jsdelivr.net`. This behaviour has changed: the default is now a **503 response** with an explicit log warning, rather than an invisible dependency on an external CDN. Existing installations that relied on the silent CDN fallback without having published the WASM locally will receive 503 errors on the WASM route until they either run `php artisan cap:publish-wasm` or explicitly enable `wasm_cdn_fallback` (via `CAP_WASM_CDN_FALLBACK=true` or the CP settings panel).
+
+### Added
+
+- New `wasm_cdn_fallback` setting (config key, env variable `CAP_WASM_CDN_FALLBACK`, CP checkbox). When enabled, the addon falls back to `cdn.jsdelivr.net` for the WASM asset if the local file is absent. Disabled by default.
+- Unit tests for `AssetController::wasm()` covering: local WASM served regardless of fallback setting, 503 on missing local WASM with fallback disabled, CDN redirect with fallback enabled, 404 when fallback is enabled but no CDN URL found in the widget JS.
+
 ### Security
 
 - **Removed Cap secret from the CP settings panel.** The secret field (`<input type="password">`) has been removed from the settings view. The secret must now be configured exclusively via `CAP_SECRET` in `.env` or through the published `oliweb/laravel-cap` configuration — never from the Statamic control panel.

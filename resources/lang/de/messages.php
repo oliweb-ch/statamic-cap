@@ -20,6 +20,9 @@ return [
     'field_hide_attribution'      => 'Attributionslink ausblenden',
     'field_hide_attribution_hint' => 'Blendet den "Cap"-Link unten rechts im Widget aus.',
 
+    'field_wasm_cdn_fallback'      => 'CDN-Fallback für WASM erlauben',
+    'field_wasm_cdn_fallback_hint' => 'Wenn aktiviert, fällt das Addon auf cdn.jsdelivr.net zurück, falls die lokale WASM-Datei nicht über `php artisan cap:publish-wasm` veröffentlicht wurde. Standardmäßig deaktiviert: Eine fehlende lokale WASM-Datei gibt einen 503 zurück, anstatt stillschweigend von einem externen CDN abhängig zu sein.',
+
     'widget_initial_state'        => 'Beweise, dass du ein Mensch bist',
     'widget_required_label'       => 'Bitte beweise, dass du ein Mensch bist',
     'widget_verifying_label'      => 'Wird überprüft…',
