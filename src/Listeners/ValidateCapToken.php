@@ -11,6 +11,10 @@ class ValidateCapToken
 {
     public function handle(FormSubmitted $event): void
     {
+        if ($event->submission->form()->get('cap_disabled', false)) {
+            return;
+        }
+
         $tokenField = config('statamic-cap.token_field', 'cap-token');
         $token = request()->input($tokenField);
 

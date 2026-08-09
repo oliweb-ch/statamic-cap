@@ -17,6 +17,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **Per-form opt-out via `cap_disabled: true` in the form YAML.** Adding `cap_disabled: true` as a top-level key in `resources/forms/{handle}.yaml` instructs `ValidateCapToken` to exit immediately without making any network request to Cap's `/siteverify` endpoint. Useful for internal or admin forms that never render the Cap widget. **Not a breaking change:** forms that do not declare this key continue to be verified exactly as before — the absence of `cap_disabled` is treated as `false` (protected). There is currently no corresponding checkbox in Statamic's CP form editor; the key must be set manually in YAML.
+
 - New `wasm_cdn_fallback` setting (config key, env variable `CAP_WASM_CDN_FALLBACK`, CP checkbox). When enabled, the addon falls back to `cdn.jsdelivr.net` for the WASM asset if the local file is absent. Disabled by default.
 - Unit tests for `AssetController::wasm()` covering: local WASM served regardless of fallback setting, 503 on missing local WASM with fallback disabled, CDN redirect with fallback enabled, 404 when fallback is enabled but no CDN URL found in the widget JS.
 

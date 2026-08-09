@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Validation\ValidationException;
 use Mockery;
+use Statamic\Contracts\Forms\Form;
 use Statamic\Contracts\Forms\Submission;
 use Statamic\Events\FormSubmitted;
 use StatamicCap\Listeners\ValidateCapToken;
@@ -29,7 +30,17 @@ class ValidateCapTokenTest extends TestCase
 
     private function makeEvent(): FormSubmitted
     {
-        return new FormSubmitted(Mockery::mock(Submission::class));
+        // Depuis l'ajout de la sortie anticipée cap_disabled, handle() appelle
+        // $event->submission->form()->get('cap_disabled', false) en première ligne.
+        // On stubbe form() pour retourner un Form avec cap_disabled=false (formulaire
+        // protégé), reproduisant le comportement d'un formulaire sans cette clé.
+        $form = Mockery::mock(Form::class);
+        $form->shouldReceive('get')->with('cap_disabled', false)->andReturn(false);
+
+        $submission = Mockery::mock(Submission::class);
+        $submission->shouldReceive('form')->andReturn($form);
+
+        return new FormSubmitted($submission);
     }
 
     private function bindRequest(string $token): void
