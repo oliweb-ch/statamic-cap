@@ -43,6 +43,8 @@ Go to **Tools > Cap CAPTCHA** in the Statamic control panel.
 
 > **Important — Cap secret:** the secret is **not** configurable from this panel. It must be set exclusively via the `CAP_SECRET` environment variable in `.env` (or via the published `oliweb/laravel-cap` configuration). Exposing the secret in the CP panel is a security risk; it is read directly from `config('cap.secret')` at verification time.
 
+> **Config key resolution:** `endpoint`, `token_field`, `timeout`, and `fail_open` are read from `config('statamic-cap.*')`, with `config('cap.*')` as a fallback for values not overridden in the CP. `secret` is sourced exclusively from `config('cap.secret')` and is never read from the `statamic-cap` namespace. If a verification call uses the wrong endpoint after a CP change, check that the YAML file has been written to `storage/statamic/addons/statamic-cap.yaml` and that the config cache has been cleared.
+
 Settings are saved to `storage/statamic/addons/statamic-cap.yaml`.
 
 ### Via environment variables
@@ -190,7 +192,7 @@ When `cap_disabled: true` is present, the listener exits immediately without mak
 
 ## Local WASM (strict CSP)
 
-By default, `{{ cap:scripts }}` injects `window.CAP_CUSTOM_WASM_URL` pointing to the `/vendor/statamic-cap/cap_wasm_bg.wasm` route. This route serves the local file if present, otherwise falls back to the jsDelivr CDN.
+By default, `{{ cap:scripts }}` injects `window.CAP_CUSTOM_WASM_URL` pointing to the `/vendor/statamic-cap/cap_wasm_bg.wasm` route. As of v1.8.0, this route returns a **503** if the local WASM has not been published — CDN fallback is opt-in and disabled by default (see the Breaking change note above).
 
 For fully self-hosted operation with no external requests, download the WASM file locally:
 
@@ -204,7 +206,7 @@ The file is saved to `storage/app/statamic-cap/cap_wasm_bg.wasm` and served auto
 
 ## Translations
 
-Translations are available in English and French. Strings cover validation, error messages, widget labels, and the CP settings page.
+Translations are available in English, French, and German. Strings cover validation, error messages, widget labels, and the CP settings page.
 
 To customise them, copy and edit the file in your project:
 
