@@ -81,11 +81,12 @@ class AssetControllerWasmTest extends TestCase
 
         // base_path() en contexte testbench pointe vers le skeleton d'Orchestra,
         // pas vers la racine du projet → File::get() sur le widget JS lèverait une exception.
-        // On mocke pour retourner un contenu JS contenant l'URL CDN attendue.
+        // On mocke pour retourner un contenu JS avec la constante de version @cap.js/wasm
+        // (format widget ≥ 0.1.58 : template literal, pas d'URL littérale).
         File::partialMock()
             ->shouldReceive('get')
             ->with(base_path('vendor/oliweb/laravel-cap/resources/js/cap-widget.js'))
-            ->andReturn('"https://cdn.jsdelivr.net/npm/@cap.js/wasm@0.0.7/browser/cap_wasm_bg.wasm"');
+            ->andReturn('(()=>{const e="0.0.8";/* widget */})();');
 
         $response = $this->get('/vendor/statamic-cap/cap_wasm_bg.wasm');
 

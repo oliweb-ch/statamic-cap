@@ -96,6 +96,8 @@ class ServiceProvider extends AddonServiceProvider
                 ->name('statamic-cap.assets.css');
             Route::get('vendor/statamic-cap/cap_wasm_bg.wasm', [AssetController::class, 'wasm'])
                 ->name('statamic-cap.assets.wasm');
+            Route::get('vendor/statamic-cap/hashwx.wasm', [AssetController::class, 'hashwxWasm'])
+                ->name('statamic-cap.assets.hashwx_wasm');
         });
     }
 

@@ -7,6 +7,36 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.14.0] - 2026-09-24
+
+### Added
+- **`hashwx` protocol support** (Cap standalone ≥ 3.1.12). New keys created on a
+  3.1.12+ instance default to `hashwx` (GPU-resistant PoW). Existing `rsw` keys
+  continue to work unchanged.
+- **Route `GET /vendor/statamic-cap/hashwx.wasm`** (`statamic-cap.assets.hashwx_wasm`)
+  serving the new WASM file via `AssetController::hashwxWasm()`. Same logic as
+  `wasm()`: local file takes priority, jsDelivr CDN as an opt-in fallback.
+- **`window.CAP_CUSTOM_HASHWX_URL`** injected by `{{ cap:scripts }}` (with and
+  without nonce), pointing to `/vendor/statamic-cap/hashwx.wasm`.
+- **`AssetVersion::hashwxWasm()`** returns the mtime of
+  `storage/app/statamic-cap/hashwx.wasm` as a cache-busting token (same convention
+  as `wasm()`).
+- **`{{ cap:frame }}` Antlers tag** — renders the Cap widget inside a hidden iframe
+  with a permissive CSP, keeping the parent page CSP strict (no `'unsafe-eval'`
+  required). Supports `nonce` and `id` parameters; multiple instances on the same
+  page are supported via unique `id` values. Mirrors the behaviour of `@capFrame`
+  from `oliweb/laravel-cap`.
+
+### Changed
+- **`cap:publish-wasm`** now downloads both `cap_wasm_bg.wasm` and `hashwx.wasm`
+  from jsDelivr. CDN URL resolution now reads the `@cap.js/wasm` version constant
+  embedded in the widget (`const e="x.y.z"`) instead of matching a literal quoted
+  URL — widget ≥ 0.1.58 uses template literals for WASM URLs.
+- **`AssetController::wasm()`** refactored: shared logic extracted into `serveWasm()`
+  (used by both `wasm()` and `hashwxWasm()`). CDN fallback URL resolution moved to
+  `cdnWasmUrl(string $filename)`, which constructs the URL from the `@cap.js/wasm`
+  version read from the widget.
+
 ## [1.13.1] - 2026-08-10
 
 ### Fixed

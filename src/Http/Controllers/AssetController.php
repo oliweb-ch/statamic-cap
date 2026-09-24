@@ -11,8 +11,6 @@ use Symfony\Component\HttpFoundation\Response as BaseResponse;
 
 class AssetController extends Controller
 {
-    private const WASM_CDN_PATTERN = '/"(https:\/\/cdn\.jsdelivr\.net\/[^"]+\.wasm)"/';
-
     public function js(): Response
     {
         $path = base_path('vendor/oliweb/laravel-cap/resources/js/cap-widget.js');
@@ -51,23 +49,41 @@ class AssetController extends Controller
 
     public function wasm(): BaseResponse
     {
-        $local = storage_path('app/statamic-cap/cap_wasm_bg.wasm');
+        return $this->serveWasm(
+            local:      storage_path('app/statamic-cap/cap_wasm_bg.wasm'),
+            etag:       AssetVersion::wasm(),
+            filename:   'cap_wasm_bg.wasm',
+            logContext: 'cap_wasm_bg.wasm',
+        );
+    }
 
+    public function hashwxWasm(): BaseResponse
+    {
+        return $this->serveWasm(
+            local:      storage_path('app/statamic-cap/hashwx.wasm'),
+            etag:       AssetVersion::hashwxWasm(),
+            filename:   'hashwx.wasm',
+            logContext: 'hashwx.wasm',
+        );
+    }
+
+    private function serveWasm(string $local, ?string $etag, string $filename, string $logContext): BaseResponse
+    {
         if (File::exists($local)) {
             $content = File::get($local);
-            // AssetVersion::wasm() is non-null here since File::exists() just passed.
+            // $etag is non-null here since File::exists() just passed.
             // The ?? 'local' fallback covers the near-impossible race where the file
             // disappears between the two calls; it degrades gracefully (no 304, no ETag).
-            $etag    = AssetVersion::wasm() ?? 'local';
+            $resolvedEtag = $etag ?? 'local';
 
-            if (request()->header('If-None-Match') === $etag) {
+            if (request()->header('If-None-Match') === $resolvedEtag) {
                 return response('', 304);
             }
 
             return response($content, 200, [
                 'Content-Type'  => 'application/wasm',
                 'Cache-Control' => 'public, max-age=31536000, immutable',
-                'ETag'          => $etag,
+                'ETag'          => $resolvedEtag,
             ]);
         }
 
@@ -75,7 +91,7 @@ class AssetController extends Controller
 
         if (! $fallbackEnabled) {
             Log::warning(
-                'statamic-cap: WASM local absent et wasm_cdn_fallback désactivé. '
+                'statamic-cap: ' . $logContext . ' local absent et wasm_cdn_fallback désactivé. '
                 . 'Publiez le WASM localement via `php artisan cap:publish-wasm`, '
                 . 'ou activez explicitement wasm_cdn_fallback dans les réglages '
                 . 'si vous acceptez la dépendance à cdn.jsdelivr.net.'
@@ -84,12 +100,30 @@ class AssetController extends Controller
             abort(503, 'Cap WASM asset unavailable.');
         }
 
-        $js = File::get(base_path('vendor/oliweb/laravel-cap/resources/js/cap-widget.js'));
+        $cdnUrl = $this->cdnWasmUrl($filename);
 
-        if (preg_match(self::WASM_CDN_PATTERN, $js, $matches)) {
-            return redirect($matches[1]);
+        if ($cdnUrl !== null) {
+            return redirect($cdnUrl);
         }
 
         abort(404);
+    }
+
+    /**
+     * Constructs the jsDelivr CDN URL for a WASM file by reading the @cap.js/wasm
+     * version constant embedded in cap-widget.js (`const e="x.y.z"`).
+     *
+     * The widget ≥ 0.1.58 uses template literals for WASM URLs, so the old approach
+     * of matching a literal quoted URL no longer applies.
+     */
+    private function cdnWasmUrl(string $filename): ?string
+    {
+        $js = File::get(base_path('vendor/oliweb/laravel-cap/resources/js/cap-widget.js'));
+
+        if (! preg_match('/const e="([\d.]+)"/', $js, $matches)) {
+            return null;
+        }
+
+        return 'https://cdn.jsdelivr.net/npm/@cap.js/wasm@' . $matches[1] . '/browser/' . $filename;
     }
 }

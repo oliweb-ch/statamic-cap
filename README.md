@@ -73,9 +73,10 @@ CAP_SECRET=your-secret-key
 | Tag | Description |
 |-----|-------------|
 | `{{ cap }}` | Renders the `<cap-widget>` with the configured endpoint |
-| `{{ cap:scripts }}` | Injects `window.CAP_CUSTOM_WASM_URL` + `<script type="module">` for the widget |
+| `{{ cap:scripts }}` | Injects `window.CAP_CUSTOM_WASM_URL`, `window.CAP_CUSTOM_HASHWX_URL` + `<script type="module">` for the widget |
 | `{{ cap:styles }}` | Widget CSS `<link>` tag |
 | `{{ cap:config }}` | `<script>` exposing `window.CAP_API_ENDPOINT` and `window.CAP_TOKEN_FIELD` |
+| `{{ cap:frame }}` | Renders the Cap widget in a hidden iframe with a permissive CSP — keeps the parent page strict (no `'unsafe-eval'`) |
 
 #### Standard widget mode
 
@@ -137,6 +138,86 @@ Use `{{ cap:config }}` to expose the endpoint in JavaScript, then instantiate `C
 
 `window.CAP_API_ENDPOINT` and `window.CAP_TOKEN_FIELD` are set by `{{ cap:config }}` from the PHP configuration — no JavaScript hard-coding required.
 
+#### Iframe mode (strict CSP — no `'unsafe-eval'`)
+
+When Cap's instrumentation is enabled, the widget requires `'unsafe-eval'` in `script-src`. If your page enforces a strict CSP, use `{{ cap:frame }}` instead: it renders the widget inside a hidden iframe (`/cap-frame`) with its own permissive CSP, keeping the parent page clean.
+
+```antlers
+{{-- No {{ cap:scripts }} or {{ cap:styles }} needed --}}
+
+{{ form:create handle="contact" }}
+    {{ cap:frame }}
+    <button type="submit">Send</button>
+{{ /form:create }}
+```
+
+This renders a hidden `<input type="hidden" name="cap-token">`, an invisible `<iframe src="/cap-frame">`, and a `<script>` that bridges the two via `postMessage`.
+
+**Token flow:**
+
+```
+Parent page (strict CSP)              iframe /cap-frame (permissive CSP)
+      │── postMessage(cap:start) ──►  │  widget.solve()
+      │◄── postMessage(cap:token) ──  │  token
+      │  fills #cap-frame-token       │
+```
+
+**Programmatic trigger** — `{{ cap:frame }}` exposes `window.capSolve()` on the parent page:
+
+```javascript
+// Trigger Cap resolution from Alpine, Vue, etc.
+window.capSolve();
+
+// Listen for the token (in addition to the hidden input auto-fill)
+window.addEventListener('message', (e) => {
+    if (e.origin !== window.location.origin) return;
+    if (!e.data || e.data.type !== 'cap:token') return;
+    myForm.submit(e.data.token);
+});
+```
+
+**With nonce:**
+
+```antlers
+{{ cap:frame nonce="{ $cspNonce }" }}
+```
+
+**Multiple instances** — pass a unique `id` when several forms share the same page:
+
+The custom id must satisfy: pattern `^[A-Za-z][A-Za-z0-9_-]*$`, max 64 characters. An invalid value throws an `InvalidArgumentException` at render time.
+
+```antlers
+{{-- Login form --}}
+{{ cap:frame id="login-cap" }}
+{{-- or with nonce: {{ cap:frame nonce="{ $cspNonce }" id="login-cap" }} --}}
+
+{{-- Contact form --}}
+{{ cap:frame id="contact-cap" }}
+```
+
+Each instance gets its own namespaced trigger function:
+
+| Tag | iframe / input ids | trigger |
+|-----|--------------------|---------|
+| `{{ cap:frame }}` | `cap-frame` / `cap-frame-token` | `window.capSolve()` |
+| `{{ cap:frame id="login-cap" }}` | `login-cap` / `login-cap-token` | `window['capSolve_login-cap']()` |
+
+**`/cap-frame` route** is registered automatically by `oliweb/laravel-cap`. Its `Content-Security-Policy` includes `'unsafe-eval'`, `'wasm-unsafe-eval'`, `blob:`, and `img-src data:` — everything Cap needs — while `frame-ancestors 'self'` prevents embedding from external origins.
+
+> **Instrumentation and strict CSP**
+>
+> Cap's optional **instrumentation** feature (enabled per site key in the Cap admin dashboard) calls `eval()` and `new Function()`, which are blocked by a `script-src` without `'unsafe-eval'`.
+>
+> If instrumentation is enabled and `'unsafe-eval'` is absent from your CSP, the widget reports `[instr_timeout]` and Cap returns HTTP 429, making every verification attempt fail.
+>
+> **Recommended workaround:** use `{{ cap:frame }}` as described above.
+>
+> **Alternatives:**
+> - Disable instrumentation for the site key in the Cap admin dashboard.
+> - Add `'unsafe-eval'` to your `script-src` (weakens the parent page CSP).
+>
+> See also: [tiagozip/cap#268](https://github.com/tiagozip/cap/issues/268)
+
 #### With CSP nonce
 
 ```antlers
@@ -157,8 +238,8 @@ Content-Security-Policy:
   connect-src 'self';
 ```
 
-`worker-src blob:` — required because the widget spawns workers via Blob URLs.  
-`wasm-unsafe-eval` — required for WebAssembly hash computation.  
+`worker-src blob:` — required because the widget spawns workers via Blob URLs.
+`wasm-unsafe-eval` — required for WebAssembly hash computation.
 `connect-src 'self'` — sufficient when WASM is served locally (see below).
 
 ### Automatic validation
@@ -194,13 +275,28 @@ When `cap_disabled: true` is present, the listener exits immediately without mak
 
 By default, `{{ cap:scripts }}` injects `window.CAP_CUSTOM_WASM_URL` pointing to the `/vendor/statamic-cap/cap_wasm_bg.wasm` route. As of v1.8.0, this route returns a **503** if the local WASM has not been published — CDN fallback is opt-in and disabled by default (see the Breaking change note above).
 
-For fully self-hosted operation with no external requests, download the WASM file locally:
+For fully self-hosted operation with no external requests, download both WASM files locally:
 
 ```bash
 php artisan cap:publish-wasm
 ```
 
-The file is saved to `storage/app/statamic-cap/cap_wasm_bg.wasm` and served automatically. The CSP can then be limited to `connect-src 'self'` without whitelisting jsDelivr.
+The command downloads and saves:
+
+| File | Path | Purpose |
+|------|------|---------|
+| `cap_wasm_bg.wasm` | `storage/app/statamic-cap/cap_wasm_bg.wasm` | PoW computation (rsw keys) |
+| `hashwx.wasm` | `storage/app/statamic-cap/hashwx.wasm` | PoW computation (hashwx keys — new default since Cap 3.1.12) |
+
+`{{ cap:scripts }}` automatically injects both `window.CAP_CUSTOM_WASM_URL` and `window.CAP_CUSTOM_HASHWX_URL` pointing to the corresponding local routes. The CSP can then be limited to `connect-src 'self'` without whitelisting jsDelivr.
+
+### Upgrading
+
+After `composer update oliweb/laravel-cap`, re-run the command to refresh both WASM files to the versions bundled with the updated package:
+
+```bash
+php artisan cap:publish-wasm
+```
 
 ---
 
