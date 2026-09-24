@@ -115,15 +115,22 @@ class Cap extends Tags
             $assignments[] = 'window.CAP_CSS_NONCE=' . $encoded;
         }
 
-        // Le widget lit nativement window.CAP_CUSTOM_WASM_URL.
-        // On pointe toujours vers notre route — elle sert le WASM local si présent,
-        // sinon redirige vers le CDN jsdelivr.
+        // Le widget lit nativement window.CAP_CUSTOM_WASM_URL et window.CAP_CUSTOM_HASHWX_URL.
+        // On pointe toujours vers nos routes — elles servent le WASM local si présent,
+        // sinon redirigent vers le CDN jsdelivr (si wasm_cdn_fallback activé).
         $wasmVersion = AssetVersion::wasm();
         $wasmUrl     = $wasmVersion
             ? route('statamic-cap.assets.wasm', ['v' => $wasmVersion])
             : route('statamic-cap.assets.wasm');
 
         $assignments[] = 'window.CAP_CUSTOM_WASM_URL=' . json_encode($wasmUrl, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT);
+
+        $hashwxVersion = AssetVersion::hashwxWasm();
+        $hashwxUrl     = $hashwxVersion
+            ? route('statamic-cap.assets.hashwx_wasm', ['v' => $hashwxVersion])
+            : route('statamic-cap.assets.hashwx_wasm');
+
+        $assignments[] = 'window.CAP_CUSTOM_HASHWX_URL=' . json_encode($hashwxUrl, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT);
 
         return implode(';', $assignments);
     }

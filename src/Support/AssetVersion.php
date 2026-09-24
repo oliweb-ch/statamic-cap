@@ -24,12 +24,23 @@ class AssetVersion
     }
 
     /**
-     * Returns the mtime of the local WASM file as a cache-busting token,
+     * Returns the mtime of the local rsw WASM file as a cache-busting token,
      * or null when the file has not been published.
      */
     public static function wasm(): ?string
     {
         $path = storage_path('app/statamic-cap/cap_wasm_bg.wasm');
+
+        return File::exists($path) ? (string) filemtime($path) : null;
+    }
+
+    /**
+     * Returns the mtime of the local hashwx WASM file as a cache-busting token,
+     * or null when the file has not been published.
+     */
+    public static function hashwxWasm(): ?string
+    {
+        $path = storage_path('app/statamic-cap/hashwx.wasm');
 
         return File::exists($path) ? (string) filemtime($path) : null;
     }

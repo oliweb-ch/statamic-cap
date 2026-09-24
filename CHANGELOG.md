@@ -7,6 +7,30 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.14.0] - 2026-09-24
+
+### Added
+- **Support du protocole `hashwx`** (Cap standalone ≥ 3.1.12). Les nouvelles clés
+  créées sur une instance 3.1.12+ utilisent `hashwx` par défaut (PoW GPU-résistant).
+  Les clés existantes (`rsw`) continuent de fonctionner sans modification.
+- **Route `GET /vendor/statamic-cap/hashwx.wasm`** (`statamic-cap.assets.hashwx_wasm`)
+  servant le nouveau WASM via `AssetController::hashwxWasm()`. Même logique que
+  `wasm()` : fichier local prioritaire, CDN jsDelivr en fallback opt-in.
+- **`window.CAP_CUSTOM_HASHWX_URL`** injecté par `{{ cap:scripts }}` (avec et sans
+  nonce), pointant vers la route `/vendor/statamic-cap/hashwx.wasm`.
+- **`AssetVersion::hashwxWasm()`** retourne le mtime de `storage/app/statamic-cap/hashwx.wasm`
+  pour le cache-busting (même convention que `wasm()`).
+
+### Changed
+- **`cap:publish-wasm`** télécharge désormais `cap_wasm_bg.wasm` **et** `hashwx.wasm`
+  depuis jsDelivr. L'extraction de l'URL CDN utilise maintenant la constante de version
+  `@cap.js/wasm` embarquée dans le widget (`const e="x.y.z"`) au lieu d'un pattern
+  sur une URL littérale — le widget ≥ 0.1.58 utilise des template literals.
+- **`AssetController::wasm()`** refactorisé : la logique commune est extraite dans
+  `serveWasm()` (partagée avec `hashwxWasm()`). La résolution de l'URL CDN de fallback
+  passe par `cdnWasmUrl(string $filename)` qui construit l'URL depuis la version
+  `@cap.js/wasm` lue dans le widget.
+
 ## [1.13.1] - 2026-08-10
 
 ### Fixed

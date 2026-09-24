@@ -10,7 +10,7 @@ class PublishWasm extends Command
 {
     protected $signature = 'cap:publish-wasm';
 
-    protected $description = 'Télécharge le WASM Cap en local pour un chargement auto-hébergé (CSP strict)';
+    protected $description = 'Télécharge les fichiers WASM Cap en local pour un chargement auto-hébergé (CSP strict)';
 
     public function handle(Http $http): int
     {
@@ -24,33 +24,42 @@ class PublishWasm extends Command
 
         $js = File::get($jsPath);
 
-        if (! preg_match('/"(https:\/\/cdn\.jsdelivr\.net\/[^"]+\.wasm)"/', $js, $matches)) {
-            $this->error('URL WASM introuvable dans cap-widget.js.');
+        // Le widget ≥ 0.1.58 embarque la version @cap.js/wasm sous la forme `const e="x.y.z"`.
+        // Les URLs WASM sont des template literals et ne peuvent donc pas être extraites
+        // par un simple preg_match sur une URL littérale.
+        if (! preg_match('/const e="([\d.]+)"/', $js, $matches)) {
+            $this->error('Version @cap.js/wasm introuvable dans cap-widget.js.');
 
             return Command::FAILURE;
         }
 
-        $wasmCdnUrl = $matches[1];
-        $wasmDir    = storage_path('app/statamic-cap');
-        $wasmLocal  = $wasmDir . '/cap_wasm_bg.wasm';
-
-        $this->info("Téléchargement du WASM depuis {$wasmCdnUrl}…");
-
-        $response = $http->get($wasmCdnUrl);
-
-        if ($response->failed()) {
-            $this->error("Échec du téléchargement ({$response->status()}).");
-
-            return Command::FAILURE;
-        }
+        $wasmVersion = $matches[1];
+        $wasmDir     = storage_path('app/statamic-cap');
+        $files       = ['cap_wasm_bg.wasm', 'hashwx.wasm'];
 
         File::ensureDirectoryExists($wasmDir);
-        File::put($wasmLocal, $response->body());
 
-        $this->info('WASM enregistré dans ' . $wasmLocal);
+        foreach ($files as $filename) {
+            $cdnUrl    = "https://cdn.jsdelivr.net/npm/@cap.js/wasm@{$wasmVersion}/browser/{$filename}";
+            $localPath = $wasmDir . '/' . $filename;
+
+            $this->info("Téléchargement de {$filename} depuis {$cdnUrl}…");
+
+            $response = $http->get($cdnUrl);
+
+            if ($response->failed()) {
+                $this->error("Échec du téléchargement de {$filename} ({$response->status()}).");
+
+                return Command::FAILURE;
+            }
+
+            File::put($localPath, $response->body());
+            $this->info("{$filename} enregistré dans {$localPath}");
+        }
+
         $this->newLine();
         $this->line('Le tag <b>{{ cap:scripts }}</b> injecte automatiquement <b>window.CAP_CUSTOM_WASM_URL</b>');
-        $this->line('pointant vers la route <b>/vendor/statamic-cap/cap_wasm_bg.wasm</b>.');
+        $this->line('et <b>window.CAP_CUSTOM_HASHWX_URL</b> pointant vers les routes locales.');
         $this->line('Ajoutez <b>connect-src \'self\'</b> à votre CSP — plus besoin de whitelister jsDelivr.');
 
         return Command::SUCCESS;
