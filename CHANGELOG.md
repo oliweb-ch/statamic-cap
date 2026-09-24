@@ -21,6 +21,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **`AssetVersion::hashwxWasm()`** returns the mtime of
   `storage/app/statamic-cap/hashwx.wasm` as a cache-busting token (same convention
   as `wasm()`).
+- **`{{ cap:frame }}` Antlers tag** — renders the Cap widget inside a hidden iframe
+  with a permissive CSP, keeping the parent page CSP strict (no `'unsafe-eval'`
+  required). Supports `nonce` and `id` parameters; multiple instances on the same
+  page are supported via unique `id` values. Mirrors the behaviour of `@capFrame`
+  from `oliweb/laravel-cap`.
 
 ### Changed
 - **`cap:publish-wasm`** now downloads both `cap_wasm_bg.wasm` and `hashwx.wasm`
